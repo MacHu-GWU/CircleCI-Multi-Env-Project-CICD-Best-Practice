@@ -11,8 +11,7 @@ jobs:
   # pre stage
   pre_stage:
   # dev stage, build and run unit test
-  dev_stage:
-    *use_python368_docker
+  dev_stage: *use_python368_docker
     steps:
       # -- CN --
       # 有些项目的 Git Repo 很大, 需要比较长的时间 clone 到本地.
@@ -36,8 +35,7 @@ jobs:
             python unit_test.py
             echo "run unit test SUCCESS!"
           no_output_timeout: "30s"
-  test_stage:
-    *use_python368_docker
+  test_stage: *use_python368_docker
     steps:
       - attach_workspace:
           at: .
