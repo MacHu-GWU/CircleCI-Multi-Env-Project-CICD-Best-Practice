@@ -8,10 +8,8 @@ jobs:
       - image: circleci/python:3.6.8
     steps:
       - checkout
-#      - attach_workspace:
-#          at: $CIRCLE_WORKING_DIRECTORY
       - persist_to_workspace:
-          root: $CIRCLE_WORKING_DIRECTORY
+          root: .
           paths:
               - .
       - run:
