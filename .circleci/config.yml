@@ -36,6 +36,7 @@ jobs:
               - .
   pre_stage_build_python_environment:
     <<: *use_python368_docker
+    steps:
       - restore_cache:
           key: venv-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
