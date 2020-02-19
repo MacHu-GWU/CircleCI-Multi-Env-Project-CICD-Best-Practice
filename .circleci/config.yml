@@ -1,13 +1,13 @@
 # This is an example CI/CD workflow for a web application
+# Every
 use_python368_docker: &use_python368_docker
   docker:
     - image: circleci/python:3.6.8
 
 version: 2
 jobs:
-  # pre stage
-  pre_stage:
-  # dev stage, build and run unit test
+  # set up python environment
+  pre_stage_check_out_source_code:
     <<: *use_python368_docker
     steps:
       # -- CN --
@@ -24,15 +24,34 @@ jobs:
       # -- ENG --
       - checkout
       - persist_to_workspace:
+          # -- CN --
           # root 和 paths 共同决定了哪些文件要被添加到 workspace 中, root 代表了
           # 源文件所在的文件夹, 可以是绝对路径, 也可以是相对于 working directory 的
           # 相对路径
           root: .
+          # -- CN --
           # paths 是一个列表, 都是相对与 root 的相对路径, 可以用 glob 或 regex
           # 来指定哪些文件要被添加到 workspace 中
           paths:
               - .
-  dev_stage:
+  pre_stage_build_python_environment:
+    <<: *use_python368_docker
+      - restore_cache:
+          key: venv-{{ .Branch }}-{{ checksum "requirements.txt" }}
+      - run:
+          name: Create virtualenv, install dependencies
+          command: |
+            python -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+            pip install -r requirements-test.txt
+      - save_cache:
+          key: venv-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          paths:
+            - 'venv'
+
+  #
+  dev_stage_run_unit_test:
     <<: *use_python368_docker
     steps:
       - attach_workspace:
@@ -40,36 +59,85 @@ jobs:
           # 将 workspace 中的文件下载到 ``at`` 所指定的目录下
           # 在这里下载的是 source code, 避免频繁的与 VCS 交互, 消耗 GitHub 的 quota
           at: .
+      - restore_cache:
+          key: venv-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
           name:
           command: |
-            echo "check out code complete!"
-            echo "build source code ..."
-            echo "build source code SUCCESS!"
+            echo "enter virtualenv"
+            . venv/bin/activate
             echo "run unit test ..."
             python unit_test.py
             echo "run unit test SUCCESS!"
           no_output_timeout: "30s"
-  test_stage:
+  test_stage_deploy_to_test:
     <<: *use_python368_docker
     steps:
       - attach_workspace:
           at: .
+      - restore_cache:
+          key: venv-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
           name:
           command: |
+            echo "enter virtualenv"
+            . venv/bin/activate
+            echo "deploy to test environment ..."
+            echo "deploy to test environment SUCCESS!"
             echo "run integration test ..."
             python int_test.py
             echo "run integration test SUCCESS!"
+          no_output_timeout: "30s"
+  test_stage_run_int_test:
+    <<: *use_python368_docker
+    steps:
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          key: venv-{{ .Branch }}-{{ checksum "requirements.txt" }}
+      - run:
+          name:
+          command: |
+            echo "enter virtualenv"
+            . venv/bin/activate
+            echo "run integration test ..."
+            python int_test.py
+            echo "run integration test SUCCESS!"
+          no_output_timeout: "30s"
+  prod_stage_deploy_to_prod:
+    <<: *use_python368_docker
+    steps:
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          key: venv-{{ .Branch }}-{{ checksum "requirements.txt" }}
+      - run:
+          name:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              echo "enter virtualenv"
+              . venv/bin/activate
+              echo "deploy to prod environment ..."
+              echo "deploy to prod environment SUCCESS!"
+            fi
           no_output_timeout: "30s"
 workflows:
   version: 2
   my-workflow:
     jobs:
-      - pre_stage
-      - dev_stage:
+      - pre_stage_check_out_source_code
+      - pre_stage_build_python_environment:
           requires:
-            - pre_stage
-      - test_stage:
+            - pre_stage_check_out_source_code
+      - dev_stage_run_unit_test:
           requires:
-            - dev_stage
+            - pre_stage_build_python_environment
+      - test_stage_deploy_to_test:
+          requires:
+            - dev_stage_run_unit_test
+      - test_stage_run_int_test:
+          requires:
+            - test_stage_deploy_to_test
+      - prod_stage_deploy_to_prod:
+          requires:
+            - test_stage_run_int_test

@@ -1,1 +1,1 @@
-print("This is integration test")
+import pytest
