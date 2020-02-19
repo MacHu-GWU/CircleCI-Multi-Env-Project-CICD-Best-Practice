@@ -1,6 +1,9 @@
+# This is an example CI/CD workflow for a web application
+#
 version: 2
 jobs:
-  pre-setup:
+  # dev stage, build and run unit test
+  dev_stage:
     docker:
       - image: circleci/python:3.6.8
     steps:
@@ -9,32 +12,26 @@ jobs:
           name:
           command: |
             echo "check out code complete!"
-  test1:
+            echo "build source code ..."
+            echo "build source code SUCCESS!"
+            echo "run unit test ..."
+            python unit_test.py
+            echo "run unit test SUCCESS!"
+  test_stage:
     docker:
       - image: circleci/python:3.6.8
     steps:
-      - checkout
       - run:
           name:
           command: |
-            echo "test1 complete!"
-  test2:
-    docker:
-      - image: circleci/python:3.6.8
-    steps:
-      - checkout
-      - run:
-          name:
-          command: |
-            echo "test2 complete!"
+            echo "run integration test ..."
+            python int_test.py
+            echo "run integration test SUCCESS!"
 workflows:
   version: 2
   my-workflow:
     jobs:
-      - pre-setup
-      - test1:
+      - dev_stage
+      - test_stage:
           requires:
-            - pre-setup
-      - test2:
-          requires:
-            - pre-setup
+            - dev_stage
