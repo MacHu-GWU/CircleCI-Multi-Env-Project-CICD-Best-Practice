@@ -5,22 +5,6 @@ use_python368_docker: &use_python368_docker
     - image: circleci/python:3.6.8
 
 
-# -- CN --
-# attach_workspace 说明:
-#   将 workspace 中的文件下载到 ``at`` 所指定的目录下
-#   在这里下载的是 source code, 避免频繁的与 VCS 交互, 消耗 GitHub 的 quota.
-#
-# restore_cache 说明:
-#   将 key 所对应的 object (一个 object 可能是许多文件和文件夹) 恢复到文件系统中
-#   和 workspace 的概念不一样, 原来的 object 的路径会完全不变地复制到新的环境中
-#   无法像 workspace 一样指定一个目录.
-fast_env_up: &fast_env_up |
-    attach_workspace:
-        at: .
-    restore_cache:
-        key: venv-{{ .Branch }}-{{ checksum "requirements.txt" }}
-
-
 version: 2
 jobs:
   # Check out source code and cache
@@ -55,7 +39,19 @@ jobs:
   pre_stage_build_python_environment:
     <<: *use_python368_docker
     steps:
-      - *fast_env_up
+      # -- CN --
+      # attach_workspace 说明:
+      #   将 workspace 中的文件下载到 ``at`` 所指定的目录下
+      #   在这里下载的是 source code, 避免频繁的与 VCS 交互, 消耗 GitHub 的 quota.
+      - attach_workspace:
+          at: .
+      # -- CN --
+      # restore_cache 说明:
+      #   将 key 所对应的 object (一个 object 可能是许多文件和文件夹) 恢复到文件系统中
+      #   和 workspace 的概念不一样, 原来的 object 的路径会完全不变地复制到新的环境中
+      #   无法像 workspace 一样指定一个目录.
+      - restore_cache:
+          key: venv-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
           name: Create virtualenv, install dependencies
           command: |
