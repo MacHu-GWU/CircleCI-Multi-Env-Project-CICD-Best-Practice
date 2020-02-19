@@ -5,7 +5,6 @@ This repo is an example for a CI/CD pipeline for a two-pizza Team projects.
 
 
 
-
 The App Development Workflow
 ------------------------------------------------------------------------------
 
@@ -13,7 +12,12 @@ It demonstrates the works to be done from the time a developer be assigned a use
 
 
 1. Developer Creates a Feature branch
-2.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Create a feature branch: ``alice/US-001/update-homepage-html``.
+- Implement the feature and change code.
+- Push to Remote.
+- Open a Pull Request.
 
 
 
