@@ -1,11 +1,18 @@
 # This is an example CI/CD workflow for a web application
 #
+
+use_python368_docker: &use_python368_docker
+  docker:
+      - image: circleci/python:3.6.8
+
+
 version: 2
 jobs:
+  # pre stage
+  pre_stage:
   # dev stage, build and run unit test
   dev_stage:
-    docker:
-      - image: circleci/python:3.6.8
+    *use_python368_docker
     steps:
       # -- CN --
       # 有些项目的 Git Repo 很大, 需要比较长的时间 clone 到本地.
@@ -30,8 +37,7 @@ jobs:
             echo "run unit test SUCCESS!"
           no_output_timeout: "30s"
   test_stage:
-    docker:
-      - image: circleci/python:3.6.8
+    *use_python368_docker
     steps:
       - attach_workspace:
           at: .
