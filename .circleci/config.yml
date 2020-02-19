@@ -8,6 +8,10 @@ jobs:
       - image: circleci/python:3.6.8
     steps:
       - checkout
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+              - .
       - run:
           name:
           command: |
@@ -17,16 +21,20 @@ jobs:
             echo "run unit test ..."
             python unit_test.py
             echo "run unit test SUCCESS!"
+          no_output_timeout: "30s"
   test_stage:
     docker:
       - image: circleci/python:3.6.8
     steps:
+      - attach_workspace:
+          at: /tmp/workspace
       - run:
           name:
           command: |
             echo "run integration test ..."
             python int_test.py
             echo "run integration test SUCCESS!"
+          no_output_timeout: "30s"
 workflows:
   version: 2
   my-workflow:
