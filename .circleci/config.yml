@@ -7,6 +7,13 @@ jobs:
     docker:
       - image: circleci/python:3.6.8
     steps:
+      # -- CN --
+      # 有些项目的 Git Repo 很大, 需要比较长的时间 clone 到本地.
+      # 让每个 jobs 都进行 checkout 是不明智的. 目前来说, 主要有两种解决办法
+      # 1. 将 checkout 的 source code 使用 ``persist_to_workspace`` 缓存起来.
+      #   然后再其他 jobs 使用 ``attach_workspace`` 进行调用
+      # 2.
+      # -- ENG --
       - checkout
       - persist_to_workspace:
           root: .
@@ -27,7 +34,7 @@ jobs:
       - image: circleci/python:3.6.8
     steps:
       - attach_workspace:
-          at: $CIRCLE_WORKING_DIRECTORY
+          at: .
       - run:
           name:
           command: |
