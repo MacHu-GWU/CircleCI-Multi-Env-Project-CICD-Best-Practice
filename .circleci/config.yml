@@ -161,3 +161,6 @@ workflows:
           type: approval
           requires:
             - test_stage_run_int_test
+          filters:
+            branches:
+              only: master
