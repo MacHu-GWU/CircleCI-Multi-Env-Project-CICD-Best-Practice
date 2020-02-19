@@ -4,6 +4,16 @@ use_python368_docker: &use_python368_docker
   docker:
     - image: circleci/python:3.6.8
 
+fast_env_up: &fast_env_up
+  - attach_workspace:
+      # -- CN --
+      # 将 workspace 中的文件下载到 ``at`` 所指定的目录下
+      # 在这里下载的是 source code, 避免频繁的与 VCS 交互, 消耗 GitHub 的 quota
+      at: .
+  - restore_cache:
+      key: venv-{{ .Branch }}-{{ checksum "requirements.txt" }}
+
+
 version: 2
 jobs:
   # set up python environment
@@ -37,8 +47,7 @@ jobs:
   pre_stage_build_python_environment:
     <<: *use_python368_docker
     steps:
-      - restore_cache:
-          key: venv-{{ .Branch }}-{{ checksum "requirements.txt" }}
+      *fast_env_up
       - run:
           name: Create virtualenv, install dependencies
           command: |
@@ -56,9 +65,6 @@ jobs:
     <<: *use_python368_docker
     steps:
       - attach_workspace:
-          # -- CN --
-          # 将 workspace 中的文件下载到 ``at`` 所指定的目录下
-          # 在这里下载的是 source code, 避免频繁的与 VCS 交互, 消耗 GitHub 的 quota
           at: .
       - restore_cache:
           key: venv-{{ .Branch }}-{{ checksum "requirements.txt" }}
