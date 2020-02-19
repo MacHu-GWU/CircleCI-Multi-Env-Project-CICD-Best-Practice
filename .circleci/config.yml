@@ -1,6 +1,4 @@
 # This is an example CI/CD workflow for a web application
-#
-
 use_python368_docker: &use_python368_docker
   docker:
     - image: circleci/python:3.6.8
@@ -10,7 +8,6 @@ jobs:
   # pre stage
   pre_stage:
   # dev stage, build and run unit test
-  dev_stage:
     <<: *use_python368_docker
     steps:
       # -- CN --
@@ -20,13 +17,27 @@ jobs:
       #   然后再其他 jobs 使用 ``attach_workspace`` 进行调用
       # 2. 自定义 checkout 流程, circleci 自带的 ``checkout`` 命令背后使用的是
       #   ``git checkout`` 命令. 我们可以使用 ``git clone --depths=1`` 替代它.
-      #
+      #   当然要使用 commit sha 来指定我们要 checkout 的版本. 其作用是只 checkout
+      #   某个 commit 时的版本, 并只要在 .git 中保留其往前 1 次的历史记录. 这样就
+      #   使得 download 下来的文件只是某个 commit 时刻的全部副本, 并几乎不包含历史记录
+      #   从而使得文件夹大小比较小.
       # -- ENG --
       - checkout
       - persist_to_workspace:
+          # root 和 paths 共同决定了哪些文件要被添加到 workspace 中, root 代表了
+          # 源文件所在的文件夹, 可以是绝对路径, 也可以是相对于 working directory 的
+          # 相对路径
           root: .
+          # paths 是一个列表, 都是相对与 root 的相对路径, 可以用 glob 或 regex
+          # 来指定哪些文件要被添加到 workspace 中
           paths:
               - .
+  dev_stage:
+    <<: *use_python368_docker
+    steps:
+      - attach_workspace:
+          # 将 
+          at: .
       - run:
           name:
           command: |
