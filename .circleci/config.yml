@@ -17,7 +17,7 @@ fast_env_up: &fast_env_up
 
 version: 2
 jobs:
-  # set up python environment
+  # Check out source code and cache
   pre_stage_check_out_source_code:
     <<: *use_python368_docker
     steps:
@@ -45,13 +45,11 @@ jobs:
           # 来指定哪些文件要被添加到 workspace 中
           paths:
               - .
+  # Set up Python environment and cache
   pre_stage_build_python_environment:
     <<: *use_python368_docker
     steps:
-      - attach_workspace:
-          at: .
-      - restore_cache:
-          key: venv-{{ .Branch }}-{{ checksum "requirements.txt" }}
+      <<: *fast_env_up
       - run:
           name: Create virtualenv, install dependencies
           command: |
@@ -64,6 +62,7 @@ jobs:
           paths:
             - 'venv'
 
+  # Run unit test
   dev_stage_run_unit_test:
     <<: *use_python368_docker
     steps:
@@ -81,6 +80,7 @@ jobs:
             echo "run unit test SUCCESS!"
           no_output_timeout: "30s"
 
+  # Deploy app to test environment
   test_stage_deploy_to_test:
     <<: *use_python368_docker
     steps:
@@ -100,6 +100,7 @@ jobs:
             echo "run integration test SUCCESS!"
           no_output_timeout: "30s"
 
+  # Run integration test
   test_stage_run_int_test:
     <<: *use_python368_docker
     steps:
@@ -117,6 +118,7 @@ jobs:
             echo "run integration test SUCCESS!"
           no_output_timeout: "30s"
 
+  # Deploy app to production
   prod_stage_deploy_to_prod:
     <<: *use_python368_docker
     steps:
@@ -134,6 +136,8 @@ jobs:
               echo "deploy to prod environment SUCCESS!"
             fi
           no_output_timeout: "30s"
+
+
 workflows:
   version: 2
   my-workflow:
@@ -152,5 +156,6 @@ workflows:
           requires:
             - test_stage_deploy_to_test
       - prod_stage_deploy_to_prod:
+          type: approval
           requires:
             - test_stage_run_int_test
