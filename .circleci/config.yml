@@ -3,7 +3,7 @@
 
 use_python368_docker: &use_python368_docker
   docker:
-      - image: circleci/python:3.6.8
+    - image: circleci/python:3.6.8
 
 version: 2
 jobs:
@@ -18,7 +18,9 @@ jobs:
       # 让每个 jobs 都进行 checkout 是不明智的. 目前来说, 主要有两种解决办法
       # 1. 将 checkout 的 source code 使用 ``persist_to_workspace`` 缓存起来.
       #   然后再其他 jobs 使用 ``attach_workspace`` 进行调用
-      # 2.
+      # 2. 自定义 checkout 流程, circleci 自带的 ``checkout`` 命令背后使用的是
+      #   ``git checkout`` 命令. 我们可以使用 ``git clone --depths=1`` 替代它.
+      #
       # -- ENG --
       - checkout
       - persist_to_workspace:
