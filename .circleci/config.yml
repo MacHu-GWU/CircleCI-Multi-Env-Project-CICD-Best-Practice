@@ -49,7 +49,7 @@ jobs:
   pre_stage_build_python_environment:
     <<: *use_python368_docker
     steps:
-      <<: *fast_env_up
+      - *fast_env_up
       - run:
           name: Create virtualenv, install dependencies
           command: |
